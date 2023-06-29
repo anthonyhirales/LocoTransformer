@@ -1,0 +1,74 @@
+#Here i will just check how to do the neighbors:
+
+b = 10
+N = 441
+Nu = N+1
+#print("UPPERS")
+#for i in range(1, Nu):
+ #   if (i-21)<0:
+  #      u=None
+   # else:
+    #    u = i-21
+        
+    #print(i, "El de arriba es: ",u)
+    
+#print("LEFTS")
+#for i in range(1,442):
+#    if ((i-1) % 21) ==0: 
+#        L = None
+#        print("CORTE DE FILA", i)
+#    else:
+#        L = i-1
+#        print("El izquierdo de ", i, "ES", L)
+        
+#print("RIGHTS")
+#for i in range(1,441) or i+1>441: #i think its ok in here since it wont iterate over 441
+#    if ((i) % 21) ==0:
+#        r = None
+#        print("CORTE DE FILA")
+#    else:
+#        r = i+1
+#        print("DERECHO DE ", i, "ES", r)
+
+
+#print("Lowers")
+#for i in range(1, 442):
+#    if (i+21)>441:
+#        u=None
+#    else:
+#        u = i+21
+#    print(i,"El de abajo es:" ,u)
+    
+
+def neighbor(g):
+    N = 21
+    Nu = N+1
+    
+    #Upper neighbor
+    if (g-21)<0:
+        u=None
+    else:
+        u = g-21
+    
+    #Left neighbor
+    if ((g-1) % 21) ==0:
+        l = None
+    else:
+        l = g-1
+    
+    #right neighbor
+    if ((g) % 21) ==0:
+        r = None
+    else:
+        r = g+1       
+    
+    #print lowers
+    if (g+21)>441:
+        d = None
+    else:
+        d = g+21
+        
+    print("tu nodo: ", g, "DERECHO: ", r, "IZQUIERDO: ", l, "ARRIBA: ", u, "ABAJO: ", d)
+    return(g,u, l, r, d)
+
+gatos = neighbor(441)
