@@ -1,0 +1,92 @@
+#You can try to implement A* with this code:
+#A* Algoritm 
+import sklearn.neighbors
+import collections
+import heapq
+import networkx as nx
+import copy 
+import time
+
+#Schedule / to do:
+# create the mesh, nodes, obstacles, Neighborhood, A*, nodes (positions), input it all to the simulation
+def node_set(g,b):
+    
+    l=1
+    node = { }
+    
+    for i in np.arange(-b, b+1, 1): #-b, b,1
+        for j in np.arange(-b,b+1,1):
+            node[l]= Node(i,j)
+            g.add_node(node[l])
+            #g.add_node(l)
+            l+=1
+    return node,g
+def neighbor(g):
+    N = 21
+    Nu = N+1
+    
+    #Upper neighbor
+    if (g-21)<0:
+        u=None
+    else:
+        u = g-21
+    
+    #Left neighbor
+    if ((g-1) % 21) ==0:
+        l = None
+    else:
+        l = g-1
+    
+    #right neighbor
+    if ((g) % 21) ==0:
+        r = None
+    else:
+        r = g+1       
+    
+    #print lowers
+    if (g+21)>441:
+        d = None
+    else:
+        d = g+21
+        
+    print("Your node: ", g, "right: ", r, "left: ", l, "up: ", u, "down: ", d)
+    return(g,u, l, r, d)
+
+def mesh(g, N, node, b):
+    
+    for i in np.arange(1, N+1):
+        l,r,t,d = neighbors(b,N,i)
+        #left neighbor
+        if l != None:
+            g.add_edge(node[i], node[l], weight = 1)
+            #g.add_edge(i,l)
+        #upper neighbor
+        if u != None:
+            g.add_edge(node[i], node[u], weight = 1)
+            #g.add_edge(i,u)
+        if r != None:
+            g.add_edge(node[i], node[r], weight = 1)
+            #g.add_edge(i,r)
+        if d != None:
+            g.add_edge(node[i], node[d], weight = 1)
+
+
+class Astar():
+    def set_parent(self, parent):
+        self.parent = parent
+    def get_parent(self):
+        return self.parent
+    def set_gScore(self, _gScore):
+        self.gScore = _gScore
+    def get_gScore(self):
+        return self.gScore
+    def to_array(self):
+        return[[self.x, self.y]]
+    def __it__(self, other):
+        """ 
+        Param other: la otra configuracion con la que comparara el objeto
+        return verdadero cuando la profundidad del objeto es menor que la del argumento
+        """
+        return self.gScore < other.gScore
+    def __str__(self):
+        return "Mesh node: " + str(self.x) + " " + str(self.y)
