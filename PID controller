@@ -1,4 +1,4 @@
-#controller Implementing motor control:
+#Camara montada
 import pybullet as p
 import pybullet_data
 import time
@@ -6,54 +6,57 @@ import os, inspect
 import numpy as np
 import math 
 
+#Simulation
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 print("current_dir=" + currentdir)
 parentdir = os.path.join(currentdir, "../gym")
 os.sys.path.insert(0, parentdir)
-
 cid = p.connect(p.SHARED_MEMORY)
 if (cid < 0):
   p.connect(p.GUI)
-
 p.resetSimulation()
-p.setGravity(0, 0, -10)
 
+#Physics
+p.setGravity(0, 0, -10)
 useRealTimeSim = 1
 p.setRealTimeSimulation(useRealTimeSim) 
+
+
 #p.loadURDF("plane.urdf")
 p.loadSDF(os.path.join(pybullet_data.getDataPath(), "stadium.sdf"))
-
 car = p.loadURDF(os.path.join(pybullet_data.getDataPath(), "racecar/racecar.urdf"))
-for i in range(p.getNumJoints(car)):
-  print(p.getJointInfo(car, i))
+
+#Wheels
 inactive_wheels = [5, 7]
 wheels = [3,2]
-
 for wheel in inactive_wheels:
   p.setJointMotorControl2(car, wheel, p.VELOCITY_CONTROL, targetVelocity=0, force=0)
 
-#BOX IMPLEMENTATION 
+#Camera
+camera_distance = 1 # Distance of the camera from the car
+camera_yaw = 30.0  # Yaw angle of the camera (rotation around the up axis)
+camera_pitch = -30  # Pitch angle of the camera (rotation around the lateral axis)
+
+
+"""BOXES"""
 box_shape = p.createCollisionShape(p.GEOM_BOX, halfExtents=[0.5, 0.5, 0.5])
+
 
 # Create the box body
 box_body = p.createMultiBody(
     baseMass=1.0,  # Mass of the box
     baseCollisionShapeIndex=box_shape,  # Corrected argument name
-    basePosition=[10, 10, 1],  # Initial position of the box
+    basePosition=[10, 0, 1],  # Initial position of the box
 )
 box_body = p.createMultiBody(
     baseMass=1.0,  # Mass of the box
     baseCollisionShapeIndex=box_shape,  # Corrected argument name
     basePosition=[0, 5, 1],  # Initial position of the box
 )
-
-
+"""TO HERE"""
 
 steering = [4, 6]
-targetVelocitySlider = p.addUserDebugParameter("wheelVelocity", -10, 10, 0)
-maxForceSlider = p.addUserDebugParameter("maxForce", 0, 10, 10)
-steeringSlider = p.addUserDebugParameter("steering", -0.5, 0.5, 0)
-goal = [10,10]
+goal = [5,5]
 
 
 while (True):
@@ -65,10 +68,31 @@ while (True):
   #calculating the distance,angle and velocities 
   distance = np.sqrt((goal[0]-carpos[0])**2 + (goal[1]- carpos[1])**2) #distance = sqrt((x2-x1)^2 + (y2-y1^2))
   theta = math.atan2((goal[1]- carpos[1]), (goal[0]-carpos[0]))        #angle = arctan ((y2-y1)/(x2-x1))
-  max_sa = .5 #maximum sterring angle 
   vel = 3.5*distance
-  gamma = theta - yaw #the actual angle we need to input
+  gamma = theta - yaw 
 
+  if gamma  > (math.pi/2) or gamma < -(math.pi/2):
+    gamma = yaw-theta
+  else:
+    gamma = theta - yaw
+
+  camyaw = np.rad2deg(gamma)
+  print(camyaw)
+    
+    
+  #CAMERA: 
+  p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
+  camData = p.getDebugVisualizerCamera()
+  viewMat = camData[2]
+  projMat = camData[3]
+  p.getCameraImage(256, 256, viewMatrix=viewMat, projectionMatrix=projMat, renderer=p.ER_BULLET_HARDWARE_OPENGL)
+  p.resetDebugVisualizerCamera(
+      cameraDistance=camera_distance,
+      cameraYaw=camera_yaw, #change to cars yaw, 
+      cameraPitch=camera_pitch,
+      cameraTargetPosition=carpos,
+      physicsClientId=0
+  )
 
   for wheel in wheels:
     p.setJointMotorControl2(car,
@@ -79,7 +103,7 @@ while (True):
 
   for steer in steering:
     p.setJointMotorControl2(car, steer, p.POSITION_CONTROL, targetPosition=gamma)
-
+    
   steering
   if (useRealTimeSim == 0):
     p.stepSimulation()
